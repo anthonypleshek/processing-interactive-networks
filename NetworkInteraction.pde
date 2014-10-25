@@ -1,6 +1,4 @@
 
-static final int NODE_COUNT = 100;
-
 PVector[] startLocs = new PVector[17];
 PVector[] endLocs = new PVector[17];
 
@@ -26,10 +24,13 @@ SimpleOpenNI kinect = new SimpleOpenNI(this);
 void setup() {
   size(640,480);
 //  frameRate(1);
-  initializeAmpNodes();
+//  initializeAmpNodes();
+  initializeRectangleNodes();
+//  initializeRandomNodes();
   
   kinect.start();
   
+  kinect.setMirror(true);
   kinect.enableDepth();
   kinect.enableDepth(width,height,30);
   
@@ -126,7 +127,7 @@ void drawKinectDetectionSections() {
     float xDiff = n.getEndLoc().x - n.getStartLoc().x;
     
     //Get the section this node is in
-    int sectionIndex = (int)(n.getStartLoc().x/(sectionWidth-1));
+    int sectionIndex = (int)(n.getStartLoc().x/(sectionWidth));
     yDiff *= 1-(averages[sectionIndex]/2500);
     xDiff *= 1-(averages[sectionIndex]/2500);
     
@@ -346,6 +347,22 @@ void initializeAmpNodes() {
   edges.put(14,new Integer[]{13,15});
   edges.put(15,new Integer[]{14,16});
   edges.put(16,new Integer[]{13,15});
+}
+
+void initializeRectangleNodes() {
+  int sections = 50;
+  for(int i=0; i<sections; i++) {
+//    float sectionHeight = random(0,height/2);
+    float sectionHeight = 0;
+    nodes.add(new Node(new PVector(i*(width/sections),height),new PVector(i*(width/sections),height)));
+    nodes.add(new Node(new PVector(i*(width/sections),height),new PVector(i*(width/sections),sectionHeight)));
+    nodes.add(new Node(new PVector((i+1)*(width/sections),height),new PVector((i+1)*(width/sections),sectionHeight)));
+    nodes.add(new Node(new PVector((i+1)*(width/sections),height),new PVector((i+1)*(width/sections),height)));
+    edges.put(4*i,new Integer[]{4*i+1});
+    edges.put(4*i+1,new Integer[]{4*i,4*i+2});
+    edges.put(4*i+2,new Integer[]{4*i+1,4*i+3});
+    edges.put(4*i+3,new Integer[]{4*i+2});
+  }
 }
 
 void initializeRandomNodes() {
