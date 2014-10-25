@@ -25,8 +25,9 @@ void setup() {
   size(640,480);
 //  frameRate(1);
 //  initializeAmpNodes();
-  initializeRectangleNodes();
+//  initializeRectangleNodes();
 //  initializeRandomNodes();
+  initializeHelloWorld();
   
   kinect.start();
   
@@ -374,4 +375,126 @@ void initializeRandomNodes() {
     }
     edges.put(i,tmpEdges);
   }
+}
+
+void initializeHelloWorld() {
+  PVector[] startLocs = new PVector[44];
+  for(int i=0; i<startLocs.length; i++) {
+    startLocs[i] = new PVector(random(0,width),random(0,height));
+  }
+  
+  PVector[] endLocs = new PVector[44];
+  endLocs[0] = new PVector(width*.02,height*.4);
+  endLocs[1] = new PVector(width*.02,height*.3);
+  endLocs[2] = new PVector(width*.02,height*.2);
+  endLocs[3] = new PVector(width*.18,height*.2);
+  endLocs[4] = new PVector(width*.18,height*.3);
+  endLocs[5] = new PVector(width*.18,height*.4);
+  
+  endLocs[6] = new PVector(width*.22,height*.4);
+  endLocs[7] = new PVector(width*.22,height*.3);
+  endLocs[8] = new PVector(width*.22,height*.2);
+  endLocs[9] = new PVector(width*.38,height*.2);
+  endLocs[10] = new PVector(width*.34,height*.3);
+  endLocs[11] = new PVector(width*.38,height*.4);
+  
+  endLocs[12] = new PVector(width*.42,height*.4);
+  endLocs[13] = new PVector(width*.42,height*.2);
+  endLocs[14] = new PVector(width*.58,height*.4);
+  
+  endLocs[15] = new PVector(width*.62,height*.4);
+  endLocs[16] = new PVector(width*.62,height*.2);
+  endLocs[17] = new PVector(width*.78,height*.4);
+  
+  endLocs[18] = new PVector(width*.82,height*.4);
+  endLocs[19] = new PVector(width*.82,height*.2);
+  endLocs[20] = new PVector(width*.98,height*.2);
+  endLocs[21] = new PVector(width*.98,height*.4);
+  
+  /////////
+  
+  endLocs[22] = new PVector(width*.02,height*.6);
+  endLocs[23] = new PVector(width*.06,height*.8);
+  endLocs[24] = new PVector(width*.1,height*.7);
+  endLocs[25] = new PVector(width*.14,height*.8);
+  endLocs[26] = new PVector(width*.18,height*.6);
+  
+  endLocs[27] = new PVector(width*.22,height*.8);
+  endLocs[28] = new PVector(width*.22,height*.6);
+  endLocs[29] = new PVector(width*.38,height*.6);
+  endLocs[30] = new PVector(width*.38,height*.8);
+  
+  endLocs[31] = new PVector(width*.42,height*.8);
+  endLocs[32] = new PVector(width*.42,height*.7);
+  endLocs[33] = new PVector(width*.42,height*.6);
+  endLocs[34] = new PVector(width*.5,height*.7);
+  endLocs[35] = new PVector(width*.58,height*.6);
+  endLocs[36] = new PVector(width*.58,height*.7);
+  endLocs[37] = new PVector(width*.58,height*.8);
+  
+  endLocs[38] = new PVector(width*.62,height*.8);
+  endLocs[39] = new PVector(width*.62,height*.6);
+  endLocs[40] = new PVector(width*.78,height*.8);
+  
+  endLocs[41] = new PVector(width*.82,height*.8);
+  endLocs[42] = new PVector(width*.82,height*.6);
+  endLocs[43] = new PVector(width*.98,height*.7);
+  
+  for(int i=0; i<startLocs.length; i++) {
+    nodes.add(new Node(startLocs[i],endLocs[i]));
+  }
+  
+  edges.put(0,new Integer[]{1});
+  edges.put(1,new Integer[]{0,2,4});
+  edges.put(2,new Integer[]{1});
+  edges.put(3,new Integer[]{4});
+  edges.put(4,new Integer[]{1,3,5});
+  edges.put(5,new Integer[]{4});
+  
+  edges.put(6,new Integer[]{7,11});
+  edges.put(7,new Integer[]{6,8,10});
+  edges.put(8,new Integer[]{7,9});
+  edges.put(9,new Integer[]{8});
+  edges.put(10,new Integer[]{7});
+  edges.put(11,new Integer[]{6});
+  
+  edges.put(12,new Integer[]{13,14});
+  edges.put(13,new Integer[]{12});
+  edges.put(14,new Integer[]{12});
+  
+  edges.put(15,new Integer[]{16,17});
+  edges.put(16,new Integer[]{15});
+  edges.put(17,new Integer[]{15});
+  
+  edges.put(18,new Integer[]{19,21});
+  edges.put(19,new Integer[]{18,20});
+  edges.put(20,new Integer[]{19,21});
+  edges.put(21,new Integer[]{18,20});
+  
+  edges.put(22,new Integer[]{23});
+  edges.put(23,new Integer[]{22,24});
+  edges.put(24,new Integer[]{23,25});
+  edges.put(25,new Integer[]{24,26});
+  edges.put(26,new Integer[]{25});
+  
+  edges.put(27,new Integer[]{28,30});
+  edges.put(28,new Integer[]{27,29});
+  edges.put(29,new Integer[]{28,30});
+  edges.put(30,new Integer[]{27,29});
+  
+  edges.put(31,new Integer[]{32});
+  edges.put(32,new Integer[]{31,33,34});
+  edges.put(33,new Integer[]{32,35});
+  edges.put(34,new Integer[]{32,36,37});
+  edges.put(35,new Integer[]{33,36});
+  edges.put(36,new Integer[]{34,35});
+  edges.put(37,new Integer[]{34});
+  
+  edges.put(38,new Integer[]{39,40});
+  edges.put(39,new Integer[]{38});
+  edges.put(40,new Integer[]{38});
+  
+  edges.put(41,new Integer[]{42,43});
+  edges.put(42,new Integer[]{41,43});
+  edges.put(43,new Integer[]{41,42});
 }
