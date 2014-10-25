@@ -25,6 +25,7 @@ SimpleOpenNI kinect = new SimpleOpenNI(this);
 
 void setup() {
   size(640,480);
+//  frameRate(1);
   initializeAmpNodes();
   
   kinect.start();
@@ -43,7 +44,7 @@ void setup() {
 }
 
 void draw() {
-  drawKinectDetection();
+  drawKinectDetectionSections();
 }
 
 void drawNoise() {
@@ -81,6 +82,106 @@ void drawKinectDetection() {
     drawEdges(i);
   }
 }
+
+void drawKinectDetectionSections() {
+  background(0);
+  
+  kinect.update();
+  
+  int[] pixelMap = kinect.depthMap();
+  PImage depthImage = kinect.depthImage();
+  
+  int numSections = 10;
+  int sectionWidth = (int)(width/numSections);
+  int[][] sections = new int[numSections][];
+  float[] averages = new float[numSections];
+  
+  for(int i=0; i<numSections; i++) {
+    sections[i] = new int[sectionWidth*height];
+  }
+  
+  for(int x=0; x<depthImage.width; x++) {
+    for(int y=0; y<depthImage.height; y++) {
+      int loc = x + y*depthImage.width;
+      int sectionIndex = (int)(x/(sectionWidth));
+      int sectionX = x%(sectionWidth-1);
+      sections[sectionIndex][sectionX+y*sectionWidth] = pixelMap[loc];
+    }
+  }
+  
+  
+  for(int i=0; i<numSections; i++) {
+    int count = 0;
+    int sum = 0;
+    for(int j=0; j<sections[i].length; j++) {
+      count++;
+      sum += sections[i][j];
+    }
+    averages[i] = sum/count;
+  }
+  
+  for(int i=0; i<nodes.size(); i++) {
+    Node n = nodes.get(i);
+    float yDiff = n.getEndLoc().y - n.getStartLoc().y;
+    float xDiff = n.getEndLoc().x - n.getStartLoc().x;
+    
+    //Get the section this node is in
+    int sectionIndex = (int)(n.getStartLoc().x/(sectionWidth-1));
+    yDiff *= 1-(averages[sectionIndex]/2500);
+    xDiff *= 1-(averages[sectionIndex]/2500);
+    
+    n.setCurrentLoc(new PVector(n.getStartLoc().x+xDiff,n.getStartLoc().y+yDiff));
+  }
+  
+  for(int i=0; i<nodes.size(); i++) {
+    drawEdges(i);
+  }
+}
+
+//void drawKinectDetectionSections() {
+//  background(0);
+//  
+//  kinect.update();
+//  
+//  PImage depthImage = kinect.depthImage();
+//  
+//  int numSections = 10;
+//  int sectionWidth = (int)(width/numSections);
+//  PImage[] sections = new PImage[numSections];
+//  float[] averages = new float[numSections];
+//  
+//  for(int i=0; i<numSections; i++) {
+//    sections[i] = new PImage(sectionWidth,height);
+//    sections[i].copy(depthImage,i*sectionWidth,0,sectionWidth,height,0,0,sectionWidth,height);
+//    sections[i].loadPixels();
+//    float sum = 0;
+//    int count = 0;
+//    for(int j=0; j<sections[i].pixels.length; j++) {
+//      count++;
+//      sum += sections[i].pixels[j];
+//    }
+//    averages[i] = sum/count;
+//    System.out.println(sum/count);
+//  }
+//  
+//  for(int i=0; i<nodes.size(); i++) {
+//    Node n = nodes.get(i);
+//    float yDiff = n.getEndLoc().y - n.getStartLoc().y;
+//    float xDiff = n.getEndLoc().x - n.getStartLoc().x;
+//    
+//    //Get the section this node is in
+//    int sectionIndex = (int)(n.getStartLoc().x/(sectionWidth-1));
+//    yDiff *= 1-(averages[sectionIndex]/2500);
+//    xDiff *= 1-(averages[sectionIndex]/2500);
+//    
+//    n.setCurrentLoc(new PVector(n.getStartLoc().x+xDiff,n.getStartLoc().y+yDiff));
+//  }
+//  
+//  for(int i=0; i<nodes.size(); i++) {
+//    drawEdges(i);
+//  }
+//  
+//}
 
 //void drawCamDiff() {
 //  background(0);
