@@ -1,3 +1,6 @@
+import SimpleOpenNI.*;
+
+SimpleOpenNI kinect = new SimpleOpenNI(this);
 
 PVector[] startLocs = new PVector[17];
 PVector[] endLocs = new PVector[17];
@@ -8,22 +11,8 @@ HashMap<Integer,Integer[]> edges = new HashMap<Integer,Integer[]>();
 float forceFactorCounter = (float)random(0,10000);
 float currentForceFactor;
 
-
-
-import SimpleOpenNI.*;
-
-SimpleOpenNI kinect = new SimpleOpenNI(this);
-
-//import processing.video.*;
-//
-//Capture cam;
-//PImage prevFrame;
-//PImage diffFrame;
-//float threshold = 50;
-
 void setup() {
   size(640,480);
-//  frameRate(1);
 //  initializeAmpNodes();
 //  initializeRectangleNodes();
 //  initializeRandomNodes();
@@ -35,17 +24,12 @@ void setup() {
   kinect.enableDepth();
   kinect.enableDepth(width,height,30);
   
-  // enable skeleton generation for all joints
-//  kinect.enableUser(SimpleOpenNI.SKEL_PROFILE_ALL);
   kinect.enableUser();
- 
-//  cam = new Capture(this, width, height, 30);
-//  prevFrame = createImage(cam.width,cam.height,RGB);
-//  diffFrame = createImage(cam.width,cam.height,RGB);
-//  cam.start();
 }
 
 void draw() {
+//  drawNoise();
+//  drawKinectDetection();
   drawKinectDetectionSections();
 }
 
@@ -58,7 +42,6 @@ void drawNoise() {
   }
   for(int i=0; i<nodes.size(); i++) {
     nodes.get(i).setCurrentLoc(getCurrentNodeLocNoise(i));
-//    drawNode(i);
   }
 }
 
@@ -139,115 +122,6 @@ void drawKinectDetectionSections() {
     drawEdges(i);
   }
 }
-
-//void drawKinectDetectionSections() {
-//  background(0);
-//  
-//  kinect.update();
-//  
-//  PImage depthImage = kinect.depthImage();
-//  
-//  int numSections = 10;
-//  int sectionWidth = (int)(width/numSections);
-//  PImage[] sections = new PImage[numSections];
-//  float[] averages = new float[numSections];
-//  
-//  for(int i=0; i<numSections; i++) {
-//    sections[i] = new PImage(sectionWidth,height);
-//    sections[i].copy(depthImage,i*sectionWidth,0,sectionWidth,height,0,0,sectionWidth,height);
-//    sections[i].loadPixels();
-//    float sum = 0;
-//    int count = 0;
-//    for(int j=0; j<sections[i].pixels.length; j++) {
-//      count++;
-//      sum += sections[i].pixels[j];
-//    }
-//    averages[i] = sum/count;
-//    System.out.println(sum/count);
-//  }
-//  
-//  for(int i=0; i<nodes.size(); i++) {
-//    Node n = nodes.get(i);
-//    float yDiff = n.getEndLoc().y - n.getStartLoc().y;
-//    float xDiff = n.getEndLoc().x - n.getStartLoc().x;
-//    
-//    //Get the section this node is in
-//    int sectionIndex = (int)(n.getStartLoc().x/(sectionWidth-1));
-//    yDiff *= 1-(averages[sectionIndex]/2500);
-//    xDiff *= 1-(averages[sectionIndex]/2500);
-//    
-//    n.setCurrentLoc(new PVector(n.getStartLoc().x+xDiff,n.getStartLoc().y+yDiff));
-//  }
-//  
-//  for(int i=0; i<nodes.size(); i++) {
-//    drawEdges(i);
-//  }
-//  
-//}
-
-//void drawCamDiff() {
-//  background(0);
-//  if (cam.available() == true) {
-//    prevFrame.copy(cam,0,0,cam.width,cam.height,0,0,cam.width,cam.height);
-//    prevFrame.updatePixels();
-//    cam.read();
-//  }
-//  cam.loadPixels();
-//  prevFrame.loadPixels();
-//  diffFrame.loadPixels();
-//  
-//  int[] diffCounts = new int[]{0,0,0,0,0,0,0,0,0,0};
-//  // Begin loop to walk through every pixel
-//  for (int x = 0; x < cam.width; x ++ ) {
-//    for (int y = 0; y < cam.height; y ++ ) {
-//      
-//      int loc = x + y*cam.width;
-//      color current = cam.pixels[loc];
-//      color previous = prevFrame.pixels[loc];
-//      
-//      float r1 = red(current); float g1 = green(current); float b1 = blue(current);
-//      float r2 = red(previous); float g2 = green(previous); float b2 = blue(previous);
-//      float diff = dist(r1,g1,b1,r2,g2,b2);
-//      
-//      // If the color at that pixel has changed, then there is motion at that pixel.
-//      if (diff > threshold) {
-//        //Figure out which section to add to the diffCount
-////        diffCounts[((int)(width/(x+1)))%diffCounts.length] += 1;
-//        diffCounts[(int)(x/((width)/diffCounts.length))] += 1;
-//        diffFrame.pixels[loc] = color(255);
-//      } else {
-//        diffFrame.pixels[loc] = color(0);
-//      }
-//    }
-//  }
-//  diffFrame.updatePixels();
-////  for(int i : diffCounts) {
-////    System.out.print(i + ",");
-////  }
-////  System.out.println();
-////  image(diffFrame,0,0,width,height);
-//  for(int i=0; i<nodes.size(); i++) {
-//    PVector newLoc = new PVector();
-//    Node n = nodes.get(i);
-//    newLoc.x = n.getStartLoc().x;
-//    newLoc.y = n.getStartLoc().y;
-//    
-//    //Find point on line currentForceFactor between node's start and end locs
-//    float yDiff = n.getEndLoc().y - n.getStartLoc().y;
-//    float xDiff = n.getEndLoc().x - n.getStartLoc().x;
-//    
-//    yDiff *= min(1,diffCounts[((int)(width/(newLoc.y+1)))%diffCounts.length]*2/(prevFrame.pixels.length/diffCounts.length));
-//    xDiff *= min(1,diffCounts[((int)(width/(newLoc.y+1)))%diffCounts.length]*2/(prevFrame.pixels.length/diffCounts.length));
-//    
-//    newLoc.x += xDiff;
-//    newLoc.y += yDiff;
-//  
-//    nodes.get(i).setCurrentLoc(newLoc);
-//  }
-//  for(int i=0; i<nodes.size(); i++) {
-//    drawEdges(i);
-//  }
-//}
 
 void drawNode(int nodeIndex) {
   Node n = nodes.get(nodeIndex);
@@ -353,7 +227,6 @@ void initializeAmpNodes() {
 void initializeRectangleNodes() {
   int sections = 50;
   for(int i=0; i<sections; i++) {
-//    float sectionHeight = random(0,height/2);
     float sectionHeight = 0;
     nodes.add(new Node(new PVector(i*(width/sections),height),new PVector(i*(width/sections),height)));
     nodes.add(new Node(new PVector(i*(width/sections),height),new PVector(i*(width/sections),sectionHeight)));
