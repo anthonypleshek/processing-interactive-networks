@@ -10,14 +10,44 @@ HashMap<Integer,Integer[]> edges = new HashMap<Integer,Integer[]>();
 float forceFactorCounter = (float)random(0,10000);
 float currentForceFactor;
 
+import processing.video.*;
+
+Capture cam;
+PImage prevFrame;
+PImage diffFrame;
+float threshold = 50;
+
 void setup() {
-  size(400,400);
-  
-  background(0);
+  size(640,480);
   initializeAmpNodes();
+  
+  cam = new Capture(this, width, height, 30);
+  prevFrame = createImage(cam.width,cam.height,RGB);
+  diffFrame = createImage(cam.width,cam.height,RGB);
+  cam.start();
+//  String[] cameras = Capture.list();
+//  
+//  if (cameras.length == 0) {
+//    println("There are no cameras available for capture.");
+//    exit();
+//  } else {
+//    println("Available cameras:");
+//    for (int i = 0; i < cameras.length; i++) {
+//      println(cameras[i]);
+//    }
+//    
+//    // The camera can be initialized directly using an 
+//    // element from the array returned by list():
+//    cam = new Capture(this, cameras[0]);
+//    cam.start();
+//  }
 }
 
 void draw() {
+  drawCamDiff();
+}
+
+void drawNoise() {
   background(0);
   currentForceFactor = noise(forceFactorCounter);
   forceFactorCounter += 0.05;
@@ -25,8 +55,108 @@ void draw() {
     drawEdges(i);
   }
   for(int i=0; i<nodes.size(); i++) {
-    drawNode(i);
+    nodes.get(i).setCurrentLoc(getCurrentNodeLocNoise(i));
+//    drawNode(i);
   }
+}
+
+void drawCamDiff() {
+  background(0);
+  if (cam.available() == true) {
+    prevFrame.copy(cam,0,0,cam.width,cam.height,0,0,cam.width,cam.height);
+    prevFrame.updatePixels();
+    cam.read();
+  }
+  cam.loadPixels();
+  prevFrame.loadPixels();
+  diffFrame.loadPixels();
+  
+  int[] diffCounts = new int[]{0,0,0,0,0,0,0,0,0,0};
+  // Begin loop to walk through every pixel
+  for (int x = 0; x < cam.width; x ++ ) {
+    for (int y = 0; y < cam.height; y ++ ) {
+      
+      int loc = x + y*cam.width;
+      color current = cam.pixels[loc];
+      color previous = prevFrame.pixels[loc];
+      
+      float r1 = red(current); float g1 = green(current); float b1 = blue(current);
+      float r2 = red(previous); float g2 = green(previous); float b2 = blue(previous);
+      float diff = dist(r1,g1,b1,r2,g2,b2);
+      
+      // If the color at that pixel has changed, then there is motion at that pixel.
+      if (diff > threshold) {
+        //Figure out which section to add to the diffCount
+//        diffCounts[((int)(width/(x+1)))%diffCounts.length] += 1;
+        diffCounts[(int)(x/((width)/diffCounts.length))] += 1;
+        diffFrame.pixels[loc] = color(255);
+      } else {
+        diffFrame.pixels[loc] = color(0);
+      }
+    }
+  }
+  diffFrame.updatePixels();
+//  for(int i : diffCounts) {
+//    System.out.print(i + ",");
+//  }
+//  System.out.println();
+//  image(diffFrame,0,0,width,height);
+  for(int i=0; i<nodes.size(); i++) {
+    PVector newLoc = new PVector();
+    Node n = nodes.get(i);
+    newLoc.x = n.getStartLoc().x;
+    newLoc.y = n.getStartLoc().y;
+    
+    //Find point on line currentForceFactor between node's start and end locs
+    float yDiff = n.getEndLoc().y - n.getStartLoc().y;
+    float xDiff = n.getEndLoc().x - n.getStartLoc().x;
+    
+    yDiff *= min(1,diffCounts[((int)(width/(newLoc.y+1)))%diffCounts.length]*2/(prevFrame.pixels.length/diffCounts.length));
+    xDiff *= min(1,diffCounts[((int)(width/(newLoc.y+1)))%diffCounts.length]*2/(prevFrame.pixels.length/diffCounts.length));
+    
+    newLoc.x += xDiff;
+    newLoc.y += yDiff;
+  
+    nodes.get(i).setCurrentLoc(newLoc);
+  }
+  for(int i=0; i<nodes.size(); i++) {
+    drawEdges(i);
+  }
+}
+
+void drawNode(int nodeIndex) {
+  Node n = nodes.get(nodeIndex);
+  pushStyle();
+  fill(color(255));
+  ellipse(n.getCurrentLoc().x,n.getCurrentLoc().y,4,4);
+  popStyle();
+}
+
+void drawEdges(int nodeIndex) {
+  Node n = nodes.get(nodeIndex);
+  for(Integer i : edges.get(nodeIndex)) {
+    pushStyle();
+    stroke(color(255));
+    strokeWeight(1);
+    line(n.getCurrentLoc().x,n.getCurrentLoc().y,nodes.get(i).getCurrentLoc().x,nodes.get(i).getCurrentLoc().y);
+    popStyle();
+  }
+}
+
+PVector getCurrentNodeLocNoise(int nodeIndex) {
+  PVector retLoc = new PVector();
+  
+  Node n = nodes.get(nodeIndex);
+  //Find point on line currentForceFactor between node's start and end locs
+  float yDiff = n.getEndLoc().y - n.getStartLoc().y;
+  float xDiff = n.getEndLoc().x - n.getStartLoc().x;
+  xDiff *= currentForceFactor;
+  yDiff *= currentForceFactor;
+  
+  retLoc.x = n.getStartLoc().x + xDiff;
+  retLoc.y = n.getStartLoc().y + yDiff;
+  
+  return retLoc;
 }
 
 void initializeAmpNodes() {
@@ -105,41 +235,3 @@ void initializeRandomNodes() {
     edges.put(i,tmpEdges);
   }
 }
-
-void drawNode(int nodeIndex) {
-  Node n = nodes.get(nodeIndex);
-  pushStyle();
-  fill(color(0,255,0));
-  n.setCurrentLoc(getCurrentNodeLoc(nodeIndex));
-  ellipse(n.getCurrentLoc().x,n.getCurrentLoc().y,4,4);
-  popStyle();
-}
-
-void drawEdges(int nodeIndex) {
-  Node n = nodes.get(nodeIndex);
-  for(Integer i : edges.get(nodeIndex)) {
-    pushStyle();
-    stroke(color(0,0,255));
-    strokeWeight(1);
-//    line(n.getStartLoc().x,n.getStartLoc().y,nodes.get(i).getStartLoc().x,nodes.get(i).getStartLoc().y);
-    line(n.getCurrentLoc().x,n.getCurrentLoc().y,nodes.get(i).getCurrentLoc().x,nodes.get(i).getCurrentLoc().y);
-    popStyle();
-  }
-}
-
-PVector getCurrentNodeLoc(int nodeIndex) {
-  PVector retLoc = new PVector();
-  
-  Node n = nodes.get(nodeIndex);
-  //Find point on line currentForceFactor between node's start and end locs
-  float yDiff = n.getEndLoc().y - n.getStartLoc().y;
-  float xDiff = n.getEndLoc().x - n.getStartLoc().x;
-  xDiff *= currentForceFactor;
-  yDiff *= currentForceFactor;
-  
-  retLoc.x = n.getStartLoc().x + xDiff;
-  retLoc.y = n.getStartLoc().y + yDiff;
-  
-  return retLoc;
-}
-
