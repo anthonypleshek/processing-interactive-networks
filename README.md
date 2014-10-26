@@ -5,4 +5,4 @@ The data is structured in such a way where each node/vertex in the network/graph
 *TODO:*
 - Clean up code; probably split things apart and make it more sensible to switch between different types of network configurations and interaction types.
 - Add interaction types: audio, basic motion detection with camera instead of Kinect, etc.
-- Fix kinect interaction to work with users further away.
+- Fix Kinect interaction to work with users further away.
